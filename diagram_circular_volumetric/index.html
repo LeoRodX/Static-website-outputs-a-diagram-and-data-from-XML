@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Круговая диаграмма</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-3d"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        canvas {
+            max-width: 600px;
+            max-height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myChart"></canvas>
+
+    <script>
+        // Функция для загрузки XML-файла
+        function loadXML(file, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", file, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    callback(xhr.responseXML);
+                }
+            };
+            xhr.send(null);
+        }
+
+        // Загрузка данных из XML
+        loadXML("data.xml", function (xml) {
+            const days = xml.getElementsByTagName("day");
+            const labels = [];
+            const data = [];
+
+            for (let i = 0; i < days.length; i++) {
+                labels.push(days[i].getAttribute("name"));
+                data.push(parseInt(days[i].getAttribute("value")));
+            }
+
+            // Создание круговой диаграммы
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie', // Тип диаграммы - круговая
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ключевые значения',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    plugins: {
+                        // Плагин для отображения значений на секторах
+                        datalabels: {
+                            color: '#fff', // Цвет текста
+                            font: {
+                                weight: 'bold', // Жирный шрифт
+                                size: 14       // Размер шрифта
+                            },
+                            formatter: (value, context) => {
+                                return `${context.chart.data.labels[context.dataIndex]}\n${value}%`;
+                            }
+                        },
+                        // Плагин для 3D-эффекта
+                        'chartjs-plugin-3d': {
+                            enabled: true, // Включаем 3D-эффект
+                            alpha: 45,    // Угол наклона
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000, // Анимация при загрузке
+                        easing: 'easeOutQuart', // Плавное завершение
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

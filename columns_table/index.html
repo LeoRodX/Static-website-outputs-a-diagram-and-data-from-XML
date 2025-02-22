@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Итоги недели</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            width: 90%;
+            max-width: 1200px;
+        }
+        #tableContainer {
+            width: 30%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #chartContainer {
+            width: 60%;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        td {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Итоги недели</h1>
+    <div class="container">
+        <!-- Таблица с данными -->
+        <div id="tableContainer">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>День</th>
+                        <th>Процент</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Данные будут добавлены с помощью JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Диаграмма -->
+        <div id="chartContainer">
+            <canvas id="myChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Функция для загрузки XML-файла
+        function loadXMLData(callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "data.xml", true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const xmlDoc = xhr.responseXML;
+                    callback(xmlDoc);
+                }
+            };
+            xhr.send();
+        }
+
+        // Функция для заполнения таблицы и создания диаграммы
+        function processData(xmlDoc) {
+            const days = xmlDoc.getElementsByTagName("day");
+            const labels = [];
+            const data = [];
+            const tableBody = document.querySelector("#dataTable tbody");
+
+            // Очистка таблицы перед заполнением
+            tableBody.innerHTML = "";
+
+            // Заполнение таблицы и подготовка данных для диаграммы
+            for (let i = 0; i < days.length; i++) {
+                const dayName = days[i].getAttribute("name");
+                const dayValue = days[i].getAttribute("value");
+
+                // Добавление строки в таблицу
+                const row = document.createElement("tr");
+                row.innerHTML = `<td>${dayName}</td><td>${dayValue}%</td>`;
+                tableBody.appendChild(row);
+
+                // Подготовка данных для диаграммы
+                labels.push(dayName);
+                data.push(parseInt(dayValue));
+            }
+
+            // Создание диаграммы
+            createChart(labels, data);
+        }
+
+        // Функция для создания диаграммы
+        function createChart(labels, data) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Процент выполнения',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',  // Красный
+                            'rgba(54, 162, 235, 0.6)',  // Синий
+                            'rgba(75, 192, 192, 0.6)', // Зеленый
+                            'rgba(255, 206, 86, 0.6)',  // Желтый
+                            'rgba(153, 102, 255, 0.6)'  // Фиолетовый
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Процент выполнения'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Дни недели'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Итоги недели'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Загрузка данных и обработка
+        loadXMLData(processData);
+    </script>
+</body>
+</html>
